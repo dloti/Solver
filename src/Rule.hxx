@@ -11,31 +11,55 @@
 #include <planning/Action.hxx>
 class Rule {
 protected:
-	double coverage, correct;//, mised;
-	double examples;
+	int coverage, correct;
+	int examples;
 
-	std::vector<Expression*> concepts;
-	aig_tk::Action* action;
+	Expression* concept;
+	std::string action;
+	aig_tk::Action* toolkitAction;
 public:
-	Rule(aig_tk::Action* action);
-	bool AddConcept(Expression* concept);
-	std::vector<Expression*> GetConcepts();
-
-	aig_tk::Action* GetAction();
-	inline int GetMaxConcepts(){ if(action== NULL) return 0; return action->pddl_objs_idx().size();}
-	inline double GetCoverage(){ return coverage;}
-	inline double GetMised(){ return examples-correct;}
-	inline double GetCorrect(){ return correct;}
-	inline void IncCoverage(){ coverage++;}
-	//inline void IncMised(){ mised++;}
-	inline void IncCorrect(){ correct++;}
-	inline double GetExamples(){ return examples;}
-	inline void IncExamples(){ examples++;}
+	Rule(Expression* concept, std::string action);
+	void AddConcept(Expression* concept);
+	Expression* GetConcept();
+	std::string GetAction();
+	inline int GetMaxConcepts() {
+		return 1;
+	}
+	inline int GetCoverage() {
+		return coverage;
+	}
+	inline int GetMised() {
+		return examples - correct;
+	}
+	inline int GetCorrect() {
+		return correct;
+	}
+	inline void SetCorrect(int correct) {
+		this->correct = correct;
+	}
+	inline void SetToolkitAction(aig_tk::Action* action) {
+		this->toolkitAction = action;
+	}
+	inline aig_tk::Action* GetToolkitAction() {
+		return this->toolkitAction;
+	}
+	inline void IncCoverage() {
+		coverage++;
+	}
+	inline void IncCorrect() {
+		correct++;
+	}
+	inline double GetExamples() {
+		return examples;
+	}
+	inline void IncExamples() {
+		examples++;
+	}
 	int GetCurrentCoverage();
-	friend std::ostream& operator<< (std::ostream &out, Rule &r);
-	friend bool operator== (Rule &r1, Rule &r2);
-	friend bool operator!= (Rule &r1, Rule &r2);
-	bool operator < (const Rule& r2) const;
+	friend std::ostream& operator<<(std::ostream &out, Rule &r);
+	friend bool operator==(Rule &r1, Rule &r2);
+	friend bool operator!=(Rule &r1, Rule &r2);
+	bool operator <(const Rule& r2) const;
 	virtual ~Rule();
 };
 

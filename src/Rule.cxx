@@ -7,40 +7,29 @@
 
 #include "Rule.hxx"
 
-Rule::Rule(aig_tk::Action* action) {
+Rule::Rule(Expression* concept, std::string action) {
 	this->coverage = 0;
 	this->correct = 0;
 	this->examples = 1;
 	this->action = action;
+	this->concept = concept;
+	this->toolkitAction=NULL;
 }
 
-aig_tk::Action* Rule::GetAction() {
+std::string Rule::GetAction() {
 	return this->action;
 }
 
-bool Rule::AddConcept(Expression* concept) {
-	//if (concepts.size() >= action->pddl_objs_idx().size())
-	if (concepts.size() > 0)
-		return false;
-	concepts.push_back(concept);
-	return true;
+void Rule::AddConcept(Expression* concept) {
+	this->concept = concept;
 }
 
-std::vector<Expression*> Rule::GetConcepts() {
-	return this->concepts;
+Expression* Rule::GetConcept() {
+	return this->concept;
 }
 
 bool operator ==(Rule& r1, Rule& r2) {
-	bool allConcepts = true;
-	if (r1.concepts.size() == r2.concepts.size()) {
-
-		if (r1.concepts[0] != r2.concepts[0]) {
-			allConcepts = false;
-		}
-
-	} else
-		allConcepts = false;
-	return (allConcepts );//&& (r1.action->name() == r2.action->name()));
+	return ((r1.concept != r2.concept)); //&& (r1.action->name() == r2.action->name()));
 }
 
 bool operator !=(Rule& r1, Rule& r2) {
@@ -48,29 +37,19 @@ bool operator !=(Rule& r1, Rule& r2) {
 }
 
 std::ostream& operator <<(std::ostream& out, Rule& r) {
-	for (unsigned i = 0; i < r.concepts.size(); i++) {
-		r.concepts[i]->infix(out);
-	}
-	out << ":" << r.action->name();
+	r.concept->infix(out);
+	out << ":" << r.action << " Correct:" << r.correct;
 	return out;
 }
 
 bool Rule::operator <(const Rule& r2) const {
-	double mised = this->examples - this->correct;
-	double r2mised = r2.examples - r2.correct;
-	if (mised / this->examples < r2mised / r2.examples)
-		return true;
-	else if (mised / this->examples > mised / r2.examples)
-		return false;
-	else
-		return (this->correct / this->examples > r2.correct / r2.examples);
+	return (this->correct > r2.correct);
 }
 
-int Rule::GetCurrentCoverage() {
-	return this->concepts[0]->GetInterpretation()->size();
-}
+//int Rule::GetCurrentCoverage() {
+//	return this->concepts[0]->GetInterpretation()->size();
+//}
 
 Rule::~Rule() {
 	// TODO Auto-generated destructor stub
 }
-
