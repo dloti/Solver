@@ -13,7 +13,7 @@ Rule::Rule(Expression* concept, std::string action) {
 	this->examples = 1;
 	this->action = action;
 	this->concept = concept;
-	this->toolkitAction=NULL;
+	this->toolkitAction = NULL;
 }
 
 std::string Rule::GetAction() {
@@ -46,9 +46,9 @@ bool Rule::operator <(const Rule& r2) const {
 	return (this->correct > r2.correct);
 }
 
-//int Rule::GetCurrentCoverage() {
-//	return this->concepts[0]->GetInterpretation()->size();
-//}
+int Rule::GetCurrentCoverage() {
+	return this->concept->GetInterpretation()->size();
+}
 
 Rule::~Rule() {
 	// TODO Auto-generated destructor stub

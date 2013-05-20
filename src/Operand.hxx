@@ -22,6 +22,9 @@ public:
 	void infix(std::ostream& s) const {
 		print(s);
 	}
+	void prefix(std::ostream& s) const {
+		print(s);
+	}
 	inline std::string GetPredicate() {
 		return predicate;
 	}

@@ -33,6 +33,14 @@ public:
 		if (op == '.')
 			s << ")";
 	}
+	void prefix(std::ostream& s) const {
+		print(s);
+		s << "(";
+		left->prefix(s);
+		s << ",";
+		right->prefix(s);
+		s << ")";
+	}
 	void UpdateInterpretation();
 	std::vector<int>* GetInterpretation() {
 		return new std::vector<int>();

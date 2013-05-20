@@ -48,28 +48,6 @@ vector<Rule> ruleSet;
 PDDL_Object_Ptr_Vec instanceObjects;
 vector<string> actions;
 
-void initialize_root_concepts() {
-	if (rootConcepts.size() > 0 && rootRoles.size() > 0)
-		return;
-	map<string, ConceptNode*>::iterator conceptIt;
-	map<string, RoleNode*>::iterator roleIt;
-	for (conceptIt = primitiveConcepts.begin(); conceptIt != primitiveConcepts.end(); ++conceptIt) {
-		rootConcepts.push_back(conceptIt->second);
-	}
-	for (conceptIt = typeConcepts.begin(); conceptIt != typeConcepts.end(); ++conceptIt) {
-		rootConcepts.push_back(conceptIt->second);
-	}
-	for (conceptIt = goalConcepts.begin(); conceptIt != goalConcepts.end(); ++conceptIt) {
-		rootConcepts.push_back(conceptIt->second);
-	}
-	for (roleIt = primitiveRoles.begin(); roleIt != primitiveRoles.end(); ++roleIt) {
-		rootRoles.push_back(roleIt->second);
-	}
-	for (roleIt = goalRoles.begin(); roleIt != goalRoles.end(); ++roleIt) {
-		rootRoles.push_back(roleIt->second);
-	}
-}
-
 void print_expressions(string title, vector<Expression*>* expressions) {
 	vector<Expression*>::iterator it;
 	cout << endl << "-" << title << "-" << endl;
@@ -80,33 +58,108 @@ void print_expressions(string title, vector<Expression*>* expressions) {
 	for (it = expressions->begin(); it != expressions->end(); ++it) {
 		cout << "\t";
 		(*it)->infix(cout);
-//		cout << " Interp: ";
-//		for (unsigned i = 0; i < (*it)->GetInterpretation()->size(); i++) {
-//			cout << instanceObjects[(*(*it)->GetInterpretation())[i]]->signature() << " ";
-//		}
+		cout << " Interp: ";
+		for (unsigned i = 0; i < (*it)->GetInterpretation()->size(); i++) {
+			cout << instanceObjects[(*(*it)->GetInterpretation())[i]]->signature() << " ";
+		}
 		cout << endl;
 	}
 }
 
-void get_type_concepts_interpretation(STRIPS_Problem& prob) {
-	for (unsigned i = 0; i < prob.num_types(); i++) {
-		string type_signature = prob.types()[i]->signature();
-		if (type_signature.compare("NO-TYPE") == 0 || type_signature.compare("ARTFICIAL-ALL-OBJECTS") == 0)
-			continue;
-		ConceptNode* c = typeConcepts[type_signature];
-		vector<int>* interpretation = c->GetInterpretation();
-		aig_tk::PDDL_Object_Ptr_Vec obj_vec = prob.objects_by_type(i);
-
-		for (unsigned k = 0; k < obj_vec.size(); k++)
-			interpretation->push_back(obj_vec[k]->index());
+void printout() {
+	/*Just print out the primitive concepts and roles*/
+	map<string, ConceptNode*>::iterator pos;
+	cout << "Primitive concepts: " << endl;
+	for (pos = primitiveConcepts.begin(); pos != primitiveConcepts.end();
+			++pos) {
+		cout << "Concept: ";
+		pos->second->print(cout);
+		cout << endl;
 	}
+	cout << "Type concepts: " << endl;
+	for (pos = typeConcepts.begin(); pos != typeConcepts.end(); ++pos) {
+		cout << "Concept: ";
+		pos->second->print(cout);
+		cout << endl;
+	}
+	cout << "Goal concepts: " << endl;
+	for (pos = goalConcepts.begin(); pos != goalConcepts.end(); ++pos) {
+		cout << "Concept: ";
+		pos->second->print(cout);
+		cout << endl;
+	}
+
+	map<string, RoleNode*>::iterator riter;
+	cout << "Primitive roles: " << endl;
+	for (riter = primitiveRoles.begin(); riter != primitiveRoles.end();
+			++riter) {
+		cout << "Role: ";
+		riter->second->print(cout);
+		cout << endl;
+	}
+	cout << "Goal roles: " << endl;
+	for (riter = goalRoles.begin(); riter != goalRoles.end(); ++riter) {
+		cout << "Role: ";
+		riter->second->print(cout);
+		cout << endl;
+	}
+
+	print_expressions("Compund concepts", &rootConcepts);
+	print_expressions("Compund roles", &rootRoles);
+	cout << "Actions" << endl;
+	for (unsigned i = 0; i < actions.size(); ++i) {
+		cout << actions[i] << endl;
+	}
+}
+
+void initialize_root_concepts() {
+	if (rootConcepts.size() > 0 && rootRoles.size() > 0)
+		return;
+	map<string, ConceptNode*>::iterator conceptIt;
+	map<string, RoleNode*>::iterator roleIt;
+	for (conceptIt = primitiveConcepts.begin();
+			conceptIt != primitiveConcepts.end(); ++conceptIt) {
+		rootConcepts.push_back(conceptIt->second);
+	}
+	for (conceptIt = typeConcepts.begin(); conceptIt != typeConcepts.end();
+			++conceptIt) {
+		rootConcepts.push_back(conceptIt->second);
+	}
+	for (conceptIt = goalConcepts.begin(); conceptIt != goalConcepts.end();
+			++conceptIt) {
+		rootConcepts.push_back(conceptIt->second);
+	}
+	for (roleIt = primitiveRoles.begin(); roleIt != primitiveRoles.end();
+			++roleIt) {
+		rootRoles.push_back(roleIt->second);
+	}
+	for (roleIt = goalRoles.begin(); roleIt != goalRoles.end(); ++roleIt) {
+		rootRoles.push_back(roleIt->second);
+	}
+}
+
+void get_type_concepts_interpretation(STRIPS_Problem& prob) {
+	//TODO type concepts
+//	for (unsigned i = 0; i < prob.num_types(); i++) {
+//		string type_signature = prob.types()[i]->signature();
+//		if (type_signature.compare("NO-TYPE") == 0
+//				|| type_signature.compare("ARTFICIAL-ALL-OBJECTS") == 0)
+//			continue;
+//		ConceptNode* c = typeConcepts[type_signature];
+//		vector<int>* interpretation = c->GetInterpretation();
+//		aig_tk::PDDL_Object_Ptr_Vec obj_vec = prob.objects_by_type(i);
+//
+//		for (unsigned k = 0; k < obj_vec.size(); k++)
+//			interpretation->push_back(obj_vec[k]->index());
+//	}
 }
 
 void get_primitive_concepts_relations(STRIPS_Problem& prob) {
 	//Get types as primitive concepts
 	for (unsigned i = 0; i < prob.num_types(); i++) {
 		string type_signature = prob.types()[i]->signature();
-		if (type_signature.compare("NO-TYPE") == 0 || type_signature.compare("ARTFICIAL-ALL-OBJECTS") == 0)
+		if (type_signature.compare("NO-TYPE") == 0
+				|| type_signature.compare("ARTFICIAL-ALL-OBJECTS") == 0)
 			continue;
 		ConceptNode* c = new ConceptNode(type_signature);
 		typeConcepts[type_signature] = c;
@@ -118,15 +171,18 @@ void get_primitive_concepts_relations(STRIPS_Problem& prob) {
 	for (unsigned k = 0; k < fnum; k++) {
 		types_idxs = prob.fluents()[k]->pddl_types_idx();
 
-		if (types_idxs.size() == 1 && prob.types()[types_idxs[0]]->name() == "NO-TYPE") {
+		if (types_idxs.size() == 1
+				&& prob.types()[types_idxs[0]]->name() == "NO-TYPE") {
 			continue;
 		}
 		if (types_idxs.size() > 1) {
 			if (types_idxs.size() == 2) {
 				map<string, RoleNode*>::iterator itPR;
 				bool inside = false;
-				for (itPR = primitiveRoles.begin(); itPR != primitiveRoles.end(); ++itPR) {
-					if ((*itPR->second).GetPredicate() == prob.fluents()[k]->predicate()) {
+				for (itPR = primitiveRoles.begin();
+						itPR != primitiveRoles.end(); ++itPR) {
+					if ((*itPR->second).GetPredicate()
+							== prob.fluents()[k]->predicate()) {
 						inside = true;
 						break;
 					}
@@ -147,14 +203,17 @@ void get_primitive_concepts_relations(STRIPS_Problem& prob) {
 		map<string, ConceptNode*>::iterator it;
 		bool inside = false;
 
-		for (it = primitiveConcepts.begin(); it != primitiveConcepts.end(); ++it) {
+		for (it = primitiveConcepts.begin(); it != primitiveConcepts.end();
+				++it) {
 			if (it->second->GetPredicate() == prob.fluents()[k]->predicate()) {
 				inside = true;
 				break;
 			}
 		}
 
-		if (inside || (prob.types()[types_idxs[0]]->name().compare("NO-TYPE")) == 0) {
+		if (inside
+				|| (prob.types()[types_idxs[0]]->name().compare("NO-TYPE"))
+						== 0) {
 			continue;
 		}
 
@@ -169,7 +228,8 @@ void get_primitive_concepts_relations(STRIPS_Problem& prob) {
 	/*Just print out the primitive concepts and roles*/
 	map<string, ConceptNode*>::iterator pos;
 	cout << "Primitive concepts: " << endl;
-	for (pos = primitiveConcepts.begin(); pos != primitiveConcepts.end(); ++pos) {
+	for (pos = primitiveConcepts.begin(); pos != primitiveConcepts.end();
+			++pos) {
 		cout << "Concept: ";
 		pos->second->print(cout);
 		cout << endl;
@@ -183,7 +243,8 @@ void get_primitive_concepts_relations(STRIPS_Problem& prob) {
 
 	map<string, RoleNode*>::iterator riter;
 	cout << "Primitive roles: " << endl;
-	for (riter = primitiveRoles.begin(); riter != primitiveRoles.end(); ++riter) {
+	for (riter = primitiveRoles.begin(); riter != primitiveRoles.end();
+			++riter) {
 		cout << "Concept: ";
 		riter->second->print(cout);
 		cout << endl;
@@ -194,9 +255,12 @@ void print_ruleset() {
 	sort(ruleSet.begin(), ruleSet.end());
 	vector<Rule>::iterator ruleIterator;
 	cout << "**************Rules******************" << endl;
-	for (ruleIterator = ruleSet.begin(); ruleIterator != ruleSet.end(); ++ruleIterator) {
-		cout << "\t" << *ruleIterator << "; Examples: " << ruleIterator->GetExamples() << "; Coverage:"
-				<< ruleIterator->GetCoverage() << "; Hits:" << ruleIterator->GetCorrect() << "; Mised:"
+	for (ruleIterator = ruleSet.begin(); ruleIterator != ruleSet.end();
+			++ruleIterator) {
+		cout << "\t" << *ruleIterator << "; Examples: "
+				<< ruleIterator->GetExamples() << "; Coverage:"
+				<< ruleIterator->GetCoverage() << "; Hits:"
+				<< ruleIterator->GetCorrect() << "; Mised:"
 				<< ruleIterator->GetMised() << std::endl;
 	}
 	cout << "*************************************";
@@ -211,8 +275,11 @@ void print_interpretations(STRIPS_Problem& prob) {
 		(*it)->infix(cout);
 		cout << " Interp: ";
 		for (unsigned i = 0; i < (*it)->GetRoleInterpretation()->size(); i++) {
-			cout << "(" << instanceObjects[(*(*it)->GetRoleInterpretation())[i].first]->signature() << ","
-					<< instanceObjects[(*(*it)->GetRoleInterpretation())[i].second]->signature() << ")" << " ";
+			cout << "("
+					<< instanceObjects[(*(*it)->GetRoleInterpretation())[i].first]->signature()
+					<< ","
+					<< instanceObjects[(*(*it)->GetRoleInterpretation())[i].second]->signature()
+					<< ")" << " ";
 		}
 		cout << endl;
 	}
@@ -225,8 +292,11 @@ void print_goal_interpretations(STRIPS_Problem& prob) {
 	cout << "-Goal concepts-" << endl;
 	for (pos = goalConcepts.begin(); pos != goalConcepts.end(); ++pos) {
 		cout << "\t" << pos->first << " Interp: ";
-		for (unsigned i = 0; i < pos->second->GetInterpretation()->size(); i++) {
-			cout << instanceObjects[(*pos->second->GetInterpretation())[i]]->signature() << " ";
+		for (unsigned i = 0; i < pos->second->GetInterpretation()->size();
+				i++) {
+			cout
+					<< instanceObjects[(*pos->second->GetInterpretation())[i]]->signature()
+					<< " ";
 		}
 		cout << endl;
 	}
@@ -237,11 +307,15 @@ void print_goal_interpretations(STRIPS_Problem& prob) {
 	vector<pair<int, int> >::iterator itintrp;
 	for (itrl = goalRoles.begin(); itrl != goalRoles.end(); ++itrl) {
 		cout << "\t" << itrl->first << " Interp: ";
-		vector<pair<int, int> >* rinterpretation = (*itrl->second).GetRoleInterpretation();
+		vector<pair<int, int> >* rinterpretation =
+				(*itrl->second).GetRoleInterpretation();
 
-		for (itintrp = rinterpretation->begin(); itintrp != rinterpretation->end(); ++itintrp) {
-			cout << "(" << instanceObjects[(int) (itintrp->first)]->signature() << ",";
-			cout << instanceObjects[(int) (itintrp->second)]->signature() << ")" << " ";
+		for (itintrp = rinterpretation->begin();
+				itintrp != rinterpretation->end(); ++itintrp) {
+			cout << "(" << instanceObjects[(int) (itintrp->first)]->signature()
+					<< ",";
+			cout << instanceObjects[(int) (itintrp->second)]->signature() << ")"
+					<< " ";
 		}
 		cout << endl;
 	}
@@ -249,7 +323,8 @@ void print_goal_interpretations(STRIPS_Problem& prob) {
 
 void clear_interpretations() {
 	map<string, ConceptNode*>::iterator itPC;
-	for (itPC = primitiveConcepts.begin(); itPC != primitiveConcepts.end(); ++itPC) {
+	for (itPC = primitiveConcepts.begin(); itPC != primitiveConcepts.end();
+			++itPC) {
 		itPC->second->ClearInterpretation();
 	}
 
@@ -302,10 +377,12 @@ void get_goal_interpretations(STRIPS_Problem& prob) {
 
 		pair<int, int>* po;
 		if (arity == 2 && objs_idx.size() == 2) {
-			vector<pair<int, int> >* interpPRVec = goalRoles[current_predicate]->GetRoleInterpretation();
+			vector<pair<int, int> >* interpPRVec =
+					goalRoles[current_predicate+'g']->GetRoleInterpretation();
 			po = new pair<int, int>(objs_idx[0], objs_idx[1]);
 
-			if (std::find((*interpPRVec).begin(), (*interpPRVec).end(), *po) == (*interpPRVec).end()) {
+			if (std::find((*interpPRVec).begin(), (*interpPRVec).end(), *po)
+					== (*interpPRVec).end()) {
 				interpPRVec->push_back(*po);
 			} else {
 				delete po;
@@ -316,15 +393,18 @@ void get_goal_interpretations(STRIPS_Problem& prob) {
 		//TODO find function
 		for (unsigned j = 0; j < objs_idx.size(); j++) {
 			bool found = false;
-			int primitiveConceptsSize = goalConcepts[current_predicate]->GetInterpretation()->size();
+			int primitiveConceptsSize =
+					goalConcepts[current_predicate+'g']->GetInterpretation()->size();
 			for (int k = 0; k < primitiveConceptsSize; k++) {
-				if ((*goalConcepts[current_predicate]->GetInterpretation())[k] == objs_idx[j]) {
+				if ((*goalConcepts[current_predicate+'g']->GetInterpretation())[k]
+						== objs_idx[j]) {
 					found = true;
 					break;
 				}
 			}
 			if (!found) {
-				goalConcepts[current_predicate]->GetInterpretation()->push_back(objs_idx[j]);
+				goalConcepts[current_predicate+'g']->GetInterpretation()->push_back(
+						objs_idx[j]);
 				found = false;
 			}
 		}
@@ -358,13 +438,15 @@ void update_primitive_interpretations(STRIPS_Problem& prob, Node* n) {
 
 		pair<int, int>* p;
 		if (arity == 2 && objs_idx.size() == 2) {
-			cout << "(" << instanceObjects[objs_idx[0]]->signature() << "," << instanceObjects[objs_idx[1]]->signature()
-					<< ")|";
+			cout << "(" << instanceObjects[objs_idx[0]]->signature() << ","
+					<< instanceObjects[objs_idx[1]]->signature() << ")|";
 
-			vector<pair<int, int> >* interpPRVec = primitiveRoles[current_predicate]->GetRoleInterpretation();
+			vector<pair<int, int> >* interpPRVec =
+					primitiveRoles[current_predicate]->GetRoleInterpretation();
 			p = new pair<int, int>(objs_idx[0], objs_idx[1]);
 
-			if (std::find((*interpPRVec).begin(), (*interpPRVec).end(), *p) == (*interpPRVec).end()) {
+			if (std::find((*interpPRVec).begin(), (*interpPRVec).end(), *p)
+					== (*interpPRVec).end()) {
 				interpPRVec->push_back(*p);
 			} else {
 				delete p;
@@ -374,9 +456,11 @@ void update_primitive_interpretations(STRIPS_Problem& prob, Node* n) {
 
 		for (unsigned j = 0; j < objs_idx.size(); j++) {
 			cout << instanceObjects[objs_idx[j]]->signature();
-			vector<int>* interpPCVec = primitiveConcepts[current_predicate]->GetInterpretation();
+			vector<int>* interpPCVec =
+					primitiveConcepts[current_predicate]->GetInterpretation();
 
-			if (std::find((*interpPCVec).begin(), (*interpPCVec).end(), objs_idx[j]) == (*interpPCVec).end()) {
+			if (std::find((*interpPCVec).begin(), (*interpPCVec).end(),
+					objs_idx[j]) == (*interpPCVec).end()) {
 				interpPCVec->push_back(objs_idx[j]);
 			}
 		}
@@ -658,6 +742,7 @@ void solve(STRIPS_Problem& prob) {
 	clear_static_interpretations();
 	get_type_concepts_interpretation(prob);
 	get_goal_interpretations(prob);
+	print_interpretations(prob);
 	while (!(n->s()->entails(prob.goal())) && max > 0) {
 		update_primitive_interpretations(prob, n);
 		update_compound_interpretations();
@@ -668,15 +753,19 @@ void solve(STRIPS_Problem& prob) {
 			Rule r = *(it);
 			Expression* concept = r.GetConcept();
 			if (r.GetCurrentCoverage() > 0) {
+				cout<<"Covers: "<<r<<endl;
 				vector<int>* interp = concept->GetInterpretation();
 				for (unsigned i = 0; i < prob.num_actions(); i++) {
 					aig_tk::Action* a = prob.actions()[i];
 					int index = resolve_action_index(a->name());
 					Index_Vec objs_idx = a->pddl_objs_idx();
-					if (a->name().compare(r.GetToolkitAction()->name()) == 0 && (*interp)[0] == objs_idx[index]) {
-						if (a->can_be_applied_on(*(n->s())) && n->successor(a) != n->parent()) {
+					if (a->name().compare(r.GetAction()) == 0
+							&& (*interp)[0] == objs_idx[index]) {
+						if (a->can_be_applied_on(*(n->s()))
+								&& n->successor(a) != n->parent()) {
 							n = n->successor(a);
-							cout << endl << "\t" << r << ":" << a->signature() << endl;
+							cout << endl << "\t" << r << ":" << a->signature()
+									<< endl;
 							applied = true;
 							break;
 						}
@@ -685,6 +774,7 @@ void solve(STRIPS_Problem& prob) {
 			}
 			++it;
 		}
+		cout<<endl;
 		--max;
 	}
 	if (max != 0)
@@ -693,32 +783,55 @@ void solve(STRIPS_Problem& prob) {
 
 Expression* find_expression(string line) {
 	Expression* ex = NULL;
-	map<string, ConceptNode*>::const_iterator it = primitiveConcepts.find(line);
-	map<string, RoleNode*>::const_iterator itr = primitiveRoles.find(line);
-	if (it != primitiveConcepts.end()) {
-		ex = it->second;
-	} else if (itr != primitiveRoles.end()) {
-		ex = itr->second;
-	}
+	stringstream ss;
+	string cline;
+	for (unsigned i = 0; i < rootConcepts.size(); ++i) {
+		rootConcepts[i]->prefix(ss);
+		getline(ss, cline);
 
-	//TODO goals...
+		if (cline.compare(line) == 0) {
+			//cout << cline << "-----" << line << endl;
+			ex = rootConcepts[i];
+			return ex;
+		}
+		ss.clear();
+		cline.clear();
+	}
+	for (unsigned i = 0; i < rootRoles.size(); ++i) {
+		rootRoles[i]->prefix(ss);
+		getline(ss, cline);
+		if (cline.compare(line) == 0) {
+			//cout << cline << "-----" << line << endl;
+			ex = rootRoles[i];
+			return ex;
+		}
+		ss.clear();
+		cline.clear();
+	}
 	return ex;
 }
 
 string get_inner(string str) {
 	int parcnt = 0, chcnt = 0;
+	bool validf(false), valids(false);
 	for (unsigned i = 1; i < str.length(); ++i) {
 		if (str[i] == '(') {
 			parcnt++;
+			validf = true;
 			continue;
 		}
 		if (str[i] == ')') {
 			parcnt--;
 			if (parcnt == 0) {
 				chcnt = i - 2;
+				valids = true;
 				break;
 			}
 		}
+	}
+	if (!validf || !valids) {
+		cout << "ERR: " << str << " not valid" << endl;
+		return "";
 	}
 	string ret(str, 2, chcnt);
 	return ret;
@@ -728,31 +841,57 @@ vector<string> splitline(string line) {
 	vector<string> ret;
 	string str = get_inner(line), field;
 	stringstream iss(str);
-	while (getline(iss, field, ',')) {
-		ret.push_back(field);
-	}
+	int parcnt = 0, chcnt = 0;
+	for (unsigned i = 1; i < str.length(); ++i) {
+		if (str[i] == '(') {
+			parcnt++;
+			continue;
+		}
+		if (str[i] == ')')
+			parcnt--;
 
+		if (str[i] == ',' && parcnt == 0) {
+			chcnt = i;
+			break;
+		}
+	}
+	string part(str, 0, chcnt);
+	ret.push_back(part);
+	part = str.substr(chcnt + 1, str.length() - 1);
+	ret.push_back(part);
 	return ret;
 }
 
 Expression* contruct_concept(string line) {
-	Expression* ex;
+	Expression* ex = NULL;
+	ex = find_expression(line);
+	if (ex != NULL)
+		return ex;
+
 	if (line[0] == '!') {
 		ex = new Not(contruct_concept(get_inner(line)), &instanceObjects);
+		rootConcepts.push_back(ex);
 	} else if (line[0] == '*') {
 		ex = new TransitiveClosure(contruct_concept(get_inner(line)));
 		ex->SetRole(true);
+		rootRoles.push_back(ex);
 	} else if (line[0] == 'I') {
 		ex = new InverseRole(contruct_concept(get_inner(line)));
 		ex->SetRole(true);
+		rootRoles.push_back(ex);
 	} else if (line[0] == '^') {
 		vector<string> strv = splitline(line);
 		ex = new Join(contruct_concept(strv[0]), contruct_concept(strv[1]));
+		rootConcepts.push_back(ex);
 	} else if (line[0] == '.') {
 		vector<string> strv = splitline(line);
-		ex = new ValueRestriction(contruct_concept(strv[0]), contruct_concept(strv[1]));
-	} else {
-		ex = find_expression(line);
+		ex = new ValueRestriction(contruct_concept(strv[0]),
+				contruct_concept(strv[1]));
+		rootConcepts.push_back(ex);
+	} else if (line[0] == '=') {
+		vector<string> strv = splitline(line);
+		ex = new Equality(contruct_concept(strv[0]), contruct_concept(strv[1]));
+		rootConcepts.push_back(ex);
 	}
 	return ex;
 }
@@ -767,16 +906,25 @@ void get_input() {
 		while (!fin.eof() && getline(fin, line)) {
 			istringstream iss(line);
 			if (i < 2) {
-				while (getline(iss, field, '\t')) {
+				while (getline(iss, field, ' ')) {
 					if (i == 0) {
 						ConceptNode* c = new ConceptNode(field);
 						primitiveConcepts[field] = c;
+						c = new ConceptNode(field);
+						c->IsGoal(true);
+						goalConcepts[field + 'g'] = c;
 					} else if (i == 1) {
 						RoleNode* r = new RoleNode(field);
 						primitiveRoles[field] = r;
+						r = new RoleNode(field);
+						r->IsGoal(true);
+						goalRoles[field + 'g'] = r;
 					}
 				}
 			} else {
+				if (i == 2) {
+					initialize_root_concepts();
+				}
 				if (i % 2 == 0) {
 					ex = contruct_concept(line);
 					if (ex->IsRole())
@@ -784,8 +932,9 @@ void get_input() {
 					else
 						rootConcepts.push_back(ex);
 				} else {
-					//TODO add rule
-					actions.push_back(line);
+					Rule r(ex, line);
+					ruleSet.push_back(r);
+					//actions.push_back(line);
 				}
 			}
 			i++;
@@ -793,37 +942,17 @@ void get_input() {
 	}
 }
 
-void printout() {
-	/*Just print out the primitive concepts and roles*/
-	map<string, ConceptNode*>::iterator pos;
-	cout << "Primitive concepts: " << endl;
-	for (pos = primitiveConcepts.begin(); pos != primitiveConcepts.end(); ++pos) {
-		cout << "Concept: ";
-		pos->second->print(cout);
-		cout << endl;
-	}
-	cout << "Type concepts: " << endl;
-	for (pos = typeConcepts.begin(); pos != typeConcepts.end(); ++pos) {
-		cout << "Concept: ";
-		pos->second->print(cout);
-		cout << endl;
-	}
-
-	map<string, RoleNode*>::iterator riter;
-	cout << "Primitive roles: " << endl;
-	for (riter = primitiveRoles.begin(); riter != primitiveRoles.end(); ++riter) {
-		cout << "Role: ";
-		riter->second->print(cout);
-		cout << endl;
-	}
-
-	print_expressions("Compund concepts", &rootConcepts);
-	print_expressions("Compund roles", &rootRoles);
-	cout << "Actions" << endl;
-	for (unsigned i = 0; i < actions.size(); ++i) {
-		cout << actions[i] << endl;
-	}
-}
+//void bind_actions(STRIPS_Problem& prob){
+//	aig_tk::Action_Ptr_Vec act = prob.actions();
+//	for(unsigned i=0;i<ruleSet.size();++i){
+//		for(unsigned j=0;j<act.size();++j){
+//			if(act[j]->name().compare(ruleSet[i].GetAction())){
+//				ruleSet[i].SetToolkitAction(act[j]);
+//				break;
+//			}
+//		}
+//	}
+//}
 
 int main(int argc, char** argv) {
 	if (argc < 3) {
@@ -843,17 +972,18 @@ int main(int argc, char** argv) {
 	aig_tk::STRIPS_Problem* strips_prob;
 	aig_tk::FF_PDDL_To_STRIPS adl_compiler;
 	get_input();
-	printout();
-//	for (int i = 0; i < instance_num; i++) {
-//		instance_path = folder + instance + static_cast<ostringstream*>(&(ostringstream() << (i + 1)))->str() + ".pddl";
-//
-//		cout << endl << "Training finished using ruleset to solve a problem" << endl;
-//		reset_globals();
-//		strips_prob = new STRIPS_Problem();
-//		adl_compiler = FF_PDDL_To_STRIPS();
-//		adl_compiler.get_problem_description(domain, instance_path, *strips_prob, true);
-//		solve(*strips_prob);
-//	}
+	//printout();
+	for (int i = 0; i < instance_num; i++) {
+
+		instance_path = folder + instance + static_cast<ostringstream*>(&(ostringstream() << (i + 1)))->str() + ".pddl";
+		cout << endl << "Using ruleset to solve a problem" << endl;
+		reset_globals();
+		strips_prob = new STRIPS_Problem();
+		adl_compiler = FF_PDDL_To_STRIPS();
+		adl_compiler.get_problem_description(domain, instance_path, *strips_prob, true);
+//		if(i==0) bind_actions(*strips_prob);
+		solve(*strips_prob);
+	}
 
 	return 0;
 }
