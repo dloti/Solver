@@ -237,7 +237,6 @@ void get_primitive_concepts_relations(STRIPS_Problem& prob) {
 }
 
 void print_ruleset() {
-	sort(ruleSet.begin(), ruleSet.end());
 	vector<Rule>::iterator ruleIterator;
 	cout << "**************Rules******************" << endl;
 	for (ruleIterator = ruleSet.begin(); ruleIterator != ruleSet.end(); ++ruleIterator) {
@@ -705,10 +704,9 @@ void solve(STRIPS_Problem& prob) {
 	get_type_concepts_interpretation(prob);
 	get_goal_interpretations(prob);
 	print_interpretations(prob);
+	update_primitive_interpretations(prob, n);
+	update_compound_interpretations();
 	while (!(n->s()->entails(prob.goal())) && max > 0) {
-		update_primitive_interpretations(prob, n);
-		update_compound_interpretations();
-		sort(ruleSet.begin(), ruleSet.end());
 		vector<Rule>::iterator it = ruleSet.begin();
 		bool applied = false;
 		while (!applied && it != ruleSet.end()) {
@@ -725,6 +723,8 @@ void solve(STRIPS_Problem& prob) {
 						if (a->can_be_applied_on(*(n->s())) && n->successor(a) != n->parent()) {
 							n = n->successor(a);
 							cout << endl << "\t" << r << ":" << a->signature() << endl;
+							update_primitive_interpretations(prob, n);
+							update_compound_interpretations();
 							applied = true;
 							break;
 						}
@@ -733,7 +733,6 @@ void solve(STRIPS_Problem& prob) {
 			}
 			++it;
 		}
-		cout << endl;
 		--max;
 	}
 	if (max != 0)
