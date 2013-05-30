@@ -933,7 +933,7 @@ int main(int argc, char** argv) {
 	for (int i = 0; i < instance_num; i++) {
 
 		instance_path = folder + instance + static_cast<ostringstream*>(&(ostringstream() << (i + 1)))->str() + ".pddl";
-		cout << endl << "Using ruleset to solve a problem" << endl;
+		cout << endl << "Using ruleset to solve instance #" << i + 1 << endl;
 		reset_globals();
 		strips_prob = new STRIPS_Problem();
 		adl_compiler = FF_PDDL_To_STRIPS();

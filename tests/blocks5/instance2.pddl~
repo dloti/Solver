@@ -16,13 +16,7 @@
 (and
 (arm-empty)
 (on b2 b1)
-(on b4 b3)
-(on-table b5)
-(on-table b3)
-(on-table b1)
-(clear b4)
-(clear b2)
-(clear b5))
+(on b4 b3))
 )
 )
 
