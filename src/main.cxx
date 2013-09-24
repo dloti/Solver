@@ -698,7 +698,7 @@ void set_instance_objects(STRIPS_Problem& prob) {
 
 void solve(STRIPS_Problem& prob) {
 	aig_tk::Node* n = aig_tk::Node::root(prob);
-	int max = 50;
+	int max = 150;
 	set_instance_objects(prob);
 	clear_static_interpretations();
 	get_type_concepts_interpretation(prob);
@@ -719,7 +719,7 @@ void solve(STRIPS_Problem& prob) {
 					aig_tk::Action* a = prob.actions()[i];
 					int index = resolve_action_index(a->name());
 					Index_Vec objs_idx = a->pddl_objs_idx();
-					if (a->name().compare(r.GetAction()) == 0 && (*interp)[0] == objs_idx[index]) {
+					if (a->name().compare(r.GetAction()) == 0){ //&& (*interp)[0] == objs_idx[index]) {
 						if (a->can_be_applied_on(*(n->s())) && n->successor(a) != n->parent()) {
 							n = n->successor(a);
 							cout << endl << "\t" << r << ":" << a->signature() << endl;
@@ -737,6 +737,8 @@ void solve(STRIPS_Problem& prob) {
 	}
 	if (max != 0)
 		cout << endl << "Goal reached" << endl;
+	else
+		cout << endl << "Goal NOT reached" << endl;
 }
 
 Expression* find_expression(string line) {
