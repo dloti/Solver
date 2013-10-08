@@ -927,22 +927,18 @@ int main(int argc, char** argv) {
 	string instance_path;
 	folder = "./tests/" + folder + "/";
 	string domain = folder + "domain.pddl";
-	vector<vector<aig_tk::Action*>*> plans;
 	aig_tk::STRIPS_Problem* strips_prob;
 	aig_tk::FF_PDDL_To_STRIPS adl_compiler;
 	get_input();
 	//printout();
-	for (int i = 0; i < instance_num; i++) {
 
-		instance_path = folder + instance + static_cast<ostringstream*>(&(ostringstream() << (i + 1)))->str() + ".pddl";
-		cout << endl << "Using ruleset to solve instance #" << i + 1 << endl;
-		reset_globals();
+		instance_path = folder + instance + static_cast<ostringstream*>(&(ostringstream() << (instance_num + 1)))->str() + ".pddl";
+		cout << endl << "Using ruleset to solve instance #" << instance_num + 1 << endl;
 		strips_prob = new STRIPS_Problem();
 		adl_compiler = FF_PDDL_To_STRIPS();
 		adl_compiler.get_problem_description(domain, instance_path, *strips_prob, true);
 //		if(i==0) bind_actions(*strips_prob);
 		solve(*strips_prob);
-	}
 
 	return 0;
 }
