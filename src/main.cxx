@@ -33,6 +33,7 @@
 #include "Equality.hxx"
 #include "ValueRestriction.hxx"
 #include "Rule.hxx"
+#include "ObjectFinder.hxx"
 
 using namespace aig_tk;
 using namespace std;
