@@ -15,15 +15,12 @@
 )
 (:goal
 (and
-(arm-empty)
 (on b1 b3)
 (on b3 b2)
 (on b5 b1)
-(on-table b2)
 (on-table b4)
-(clear b4)
-(clear b5))
+(on-table b2)
+(clear b5)
+(clear b4))
 )
 )
-
-

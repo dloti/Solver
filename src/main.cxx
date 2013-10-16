@@ -522,32 +522,6 @@ string resolve_situation() {
 	return "";
 }
 
-void get_joined_features() {
-	map<string, int>::iterator it;
-	joinedFeatures.clear();
-	cout << "Policy size: " << policy.size() << endl;
-
-	for (it = policy.begin(); it != policy.end(); ++it) {
-		string signature = it->first;
-		vector<int> tmp;
-		for (unsigned i = 0; i < signature.size(); ++i) {
-			if (signature[i] == '1') {
-				vector<int>* vec = features[i]->GetInterpretation();
-				for (unsigned j = 0; j < vec->size(); ++j) {
-					if (find(tmp.begin(), tmp.end(), (*vec)[j]) == tmp.end())
-						tmp.push_back((*vec)[j]);
-					if ((*vec)[j] > 8) {
-						features[i]->infix(cout);
-						cout << endl;
-					}
-				}
-			}
-		}
-		sort(tmp.begin(), tmp.end());
-		joinedFeatures[signature] = tmp;
-	}
-}
-
 void print_policy() {
 	cout << endl << "Policy:" << endl;
 	map<string, int>::iterator it;
@@ -561,35 +535,35 @@ void print_policy() {
 	cout << endl;
 }
 
-bool objs_in_joined_features(Index_Vec objs_idx) {
-	string signature = get_situation_signature();
-	if (joinedFeatures.find(signature) != joinedFeatures.end()) {
-		vector<int> interp = joinedFeatures[signature];
-		bool hasOne = false;
-		for (unsigned i = 0; i < signature.length(); ++i) {
-			if (signature[i] == '1'){
-				hasOne = true;
-				break;
-			}
-		}
-		if (!hasOne)
-			return false;
-		cout<<"Interp: ";
-		for(unsigned i=0;i<interp.size();++i)
-			cout<<interp[i]<<" ";
-		cout<<endl<<"Objs: ";
-		for(unsigned i=0;i<objs_idx.size();++i)
-			cout<<objs_idx[i]<<" ";
-		cout<<endl;
-		for (unsigned i = 0; i < objs_idx.size(); ++i) {
-			if (find(interp.begin(), interp.end(), objs_idx[i])
-					== interp.end()) {
-				return false;
-			}
-		}
-	}
-	return true;
-}
+//bool objs_in_joined_features(Index_Vec objs_idx) {
+//	string signature = get_situation_signature();
+//	if (joinedFeatures.find(signature) != joinedFeatures.end()) {
+//		vector<int> interp = joinedFeatures[signature];
+//		bool hasOne = false;
+//		for (unsigned i = 0; i < signature.length(); ++i) {
+//			if (signature[i] == '1'){
+//				hasOne = true;
+//				break;
+//			}
+//		}
+//		if (!hasOne)
+//			return false;
+//		cout<<"Interp: ";
+//		for(unsigned i=0;i<interp.size();++i)
+//			cout<<interp[i]<<" ";
+//		cout<<endl<<"Objs: ";
+//		for(unsigned i=0;i<objs_idx.size();++i)
+//			cout<<objs_idx[i]<<" ";
+//		cout<<endl;
+//		for (unsigned i = 0; i < objs_idx.size(); ++i) {
+//			if (find(interp.begin(), interp.end(), objs_idx[i])
+//					== interp.end()) {
+//				return false;
+//			}
+//		}
+//	}
+//	return true;
+//}
 
 void print_incorrect() {
 	for (unsigned i = 0; i < features.size(); ++i) {
@@ -606,7 +580,7 @@ void print_incorrect() {
 }
 void solve(STRIPS_Problem& prob) {
 	aig_tk::Node* n = aig_tk::Node::root(prob);
-	int max = 50;
+	int max = 1000;
 	set_instance_objects(prob);
 	clear_static_interpretations();
 	get_type_concepts_interpretation(prob);
@@ -615,7 +589,8 @@ void solve(STRIPS_Problem& prob) {
 	update_primitive_interpretations(prob, n);
 	update_compound_interpretations();
 	print_interpretations(prob);
-	get_joined_features();
+	ObjectFinder* ofinder = new ObjectFinder(instanceObjects, &policy, &features);
+	ofinder->MakeJoins();
 	cout << " All objects size: " << instanceObjects.size();
 
 	string paction = resolve_situation();
@@ -633,7 +608,8 @@ void solve(STRIPS_Problem& prob) {
 			Index_Vec objs_idx = a->pddl_objs_idx();
 
 			if (a->name().compare(paction) == 0) { //&& (*interp)[0] == objs_idx[index]) {
-				bool inFeatures = objs_in_joined_features(objs_idx);
+//				bool inFeatures = objs_in_joined_features(objs_idx);
+				bool inFeatures = ofinder->AreObjectsIn(get_situation_signature(),objs_idx);
 				if (!inFeatures)
 					continue;
 				if (a->can_be_applied_on(*(n->s()))
@@ -642,7 +618,7 @@ void solve(STRIPS_Problem& prob) {
 					cout << endl << a->signature() << endl;
 					update_primitive_interpretations(prob, n);
 					update_compound_interpretations();
-					get_joined_features();
+					ofinder->MakeJoins();
 					applied = true;
 					break;
 				}

@@ -11,16 +11,20 @@
 #include<vector>
 #include<map>
 #include "Expression.hxx"
+#include "Operator.hxx"
+#include "UnaryOperator.hxx"
+#include "Not.hxx"
 class ObjectFinder {
-	std::vector<std::string> allObjects;
+	aig_tk::PDDL_Object_Ptr_Vec allObjects;
 	std::map<std::string, int >* policy;
 	std::vector<Expression* >* features;
 	std::map<std::string, std::vector<int> > joinedFeatures;
 
 public:
-	ObjectFinder(std::vector<std::string> allObjects, std::map<std::string, int>* policy,
+	ObjectFinder(aig_tk::PDDL_Object_Ptr_Vec allObjects, std::map<std::string, int>* policy,
 			std::vector<Expression*>* features);
 	void MakeJoins();
+	bool AreObjectsIn(std::string signature, std::vector<unsigned> objects);
 
 };
 
