@@ -23,7 +23,7 @@ class ObjectFinder {
 public:
 	ObjectFinder(aig_tk::PDDL_Object_Ptr_Vec allObjects, std::map<std::string, int>* policy,
 			std::vector<Expression*>* features);
-	void MakeJoins();
+	bool MakeJoins();
 	bool AreObjectsIn(std::string signature, std::vector<unsigned> objects);
 
 };

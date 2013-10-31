@@ -42,6 +42,7 @@ int policySize;
 map<string, int> policy;
 vector<Expression*> features;
 map<string, vector<int> > joinedFeatures;
+vector<pair<string, int> > decisionList;
 
 map<string, RoleNode*> primitiveRoles;
 map<string, RoleNode*> goalRoles;
@@ -66,9 +67,7 @@ void print_expressions(string title, vector<Expression*>* expressions) {
 		(*it)->infix(cout);
 		cout << " Interp: ";
 		for (unsigned i = 0; i < (*it)->GetInterpretation()->size(); i++) {
-			cout
-					<< instanceObjects[(*(*it)->GetInterpretation())[i]]->signature()
-					<< " ";
+			cout << instanceObjects[(*(*it)->GetInterpretation())[i]]->signature() << " ";
 		}
 		cout << endl;
 	}
@@ -78,8 +77,7 @@ void printout() {
 	/*Just print out the primitive concepts and roles*/
 	map<string, ConceptNode*>::iterator pos;
 	cout << "Primitive concepts: " << endl;
-	for (pos = primitiveConcepts.begin(); pos != primitiveConcepts.end();
-			++pos) {
+	for (pos = primitiveConcepts.begin(); pos != primitiveConcepts.end(); ++pos) {
 		cout << "Concept: ";
 		pos->second->print(cout);
 		cout << endl;
@@ -99,8 +97,7 @@ void printout() {
 
 	map<string, RoleNode*>::iterator riter;
 	cout << "Primitive roles: " << endl;
-	for (riter = primitiveRoles.begin(); riter != primitiveRoles.end();
-			++riter) {
+	for (riter = primitiveRoles.begin(); riter != primitiveRoles.end(); ++riter) {
 		cout << "Role: ";
 		riter->second->print(cout);
 		cout << endl;
@@ -125,20 +122,16 @@ void initialize_root_concepts() {
 		return;
 	map<string, ConceptNode*>::iterator conceptIt;
 	map<string, RoleNode*>::iterator roleIt;
-	for (conceptIt = primitiveConcepts.begin();
-			conceptIt != primitiveConcepts.end(); ++conceptIt) {
+	for (conceptIt = primitiveConcepts.begin(); conceptIt != primitiveConcepts.end(); ++conceptIt) {
 		rootConcepts.push_back(conceptIt->second);
 	}
-	for (conceptIt = typeConcepts.begin(); conceptIt != typeConcepts.end();
-			++conceptIt) {
+	for (conceptIt = typeConcepts.begin(); conceptIt != typeConcepts.end(); ++conceptIt) {
 		rootConcepts.push_back(conceptIt->second);
 	}
-	for (conceptIt = goalConcepts.begin(); conceptIt != goalConcepts.end();
-			++conceptIt) {
+	for (conceptIt = goalConcepts.begin(); conceptIt != goalConcepts.end(); ++conceptIt) {
 		rootConcepts.push_back(conceptIt->second);
 	}
-	for (roleIt = primitiveRoles.begin(); roleIt != primitiveRoles.end();
-			++roleIt) {
+	for (roleIt = primitiveRoles.begin(); roleIt != primitiveRoles.end(); ++roleIt) {
 		rootRoles.push_back(roleIt->second);
 	}
 	for (roleIt = goalRoles.begin(); roleIt != goalRoles.end(); ++roleIt) {
@@ -166,8 +159,7 @@ void get_primitive_concepts_relations(STRIPS_Problem& prob) {
 	//Get types as primitive concepts
 	for (unsigned i = 0; i < prob.num_types(); i++) {
 		string type_signature = prob.types()[i]->signature();
-		if (type_signature.compare("NO-TYPE") == 0
-				|| type_signature.compare("ARTFICIAL-ALL-OBJECTS") == 0)
+		if (type_signature.compare("NO-TYPE") == 0 || type_signature.compare("ARTFICIAL-ALL-OBJECTS") == 0)
 			continue;
 		ConceptNode* c = new ConceptNode(type_signature);
 		typeConcepts[type_signature] = c;
@@ -179,18 +171,15 @@ void get_primitive_concepts_relations(STRIPS_Problem& prob) {
 	for (unsigned k = 0; k < fnum; k++) {
 		types_idxs = prob.fluents()[k]->pddl_types_idx();
 
-		if (types_idxs.size() == 1
-				&& prob.types()[types_idxs[0]]->name() == "NO-TYPE") {
+		if (types_idxs.size() == 1 && prob.types()[types_idxs[0]]->name() == "NO-TYPE") {
 			continue;
 		}
 		if (types_idxs.size() > 1) {
 			if (types_idxs.size() == 2) {
 				map<string, RoleNode*>::iterator itPR;
 				bool inside = false;
-				for (itPR = primitiveRoles.begin();
-						itPR != primitiveRoles.end(); ++itPR) {
-					if ((*itPR->second).GetPredicate()
-							== prob.fluents()[k]->predicate()) {
+				for (itPR = primitiveRoles.begin(); itPR != primitiveRoles.end(); ++itPR) {
+					if ((*itPR->second).GetPredicate() == prob.fluents()[k]->predicate()) {
 						inside = true;
 						break;
 					}
@@ -211,17 +200,14 @@ void get_primitive_concepts_relations(STRIPS_Problem& prob) {
 		map<string, ConceptNode*>::iterator it;
 		bool inside = false;
 
-		for (it = primitiveConcepts.begin(); it != primitiveConcepts.end();
-				++it) {
+		for (it = primitiveConcepts.begin(); it != primitiveConcepts.end(); ++it) {
 			if (it->second->GetPredicate() == prob.fluents()[k]->predicate()) {
 				inside = true;
 				break;
 			}
 		}
 
-		if (inside
-				|| (prob.types()[types_idxs[0]]->name().compare("NO-TYPE"))
-						== 0) {
+		if (inside || (prob.types()[types_idxs[0]]->name().compare("NO-TYPE")) == 0) {
 			continue;
 		}
 
@@ -282,11 +268,8 @@ void print_interpretations(STRIPS_Problem& prob) {
 		(*it)->infix(cout);
 		cout << " Interp: ";
 		for (unsigned i = 0; i < (*it)->GetRoleInterpretation()->size(); i++) {
-			cout << "("
-					<< instanceObjects[(*(*it)->GetRoleInterpretation())[i].first]->signature()
-					<< ","
-					<< instanceObjects[(*(*it)->GetRoleInterpretation())[i].second]->signature()
-					<< ")" << " ";
+			cout << "(" << instanceObjects[(*(*it)->GetRoleInterpretation())[i].first]->signature() << ","
+					<< instanceObjects[(*(*it)->GetRoleInterpretation())[i].second]->signature() << ")" << " ";
 		}
 		cout << endl;
 	}
@@ -299,11 +282,8 @@ void print_goal_interpretations(STRIPS_Problem& prob) {
 	cout << "-Goal concepts-" << endl;
 	for (pos = goalConcepts.begin(); pos != goalConcepts.end(); ++pos) {
 		cout << "\t" << pos->first << " Interp: ";
-		for (unsigned i = 0; i < pos->second->GetInterpretation()->size();
-				i++) {
-			cout
-					<< instanceObjects[(*pos->second->GetInterpretation())[i]]->signature()
-					<< " ";
+		for (unsigned i = 0; i < pos->second->GetInterpretation()->size(); i++) {
+			cout << instanceObjects[(*pos->second->GetInterpretation())[i]]->signature() << " ";
 		}
 		cout << endl;
 	}
@@ -314,15 +294,11 @@ void print_goal_interpretations(STRIPS_Problem& prob) {
 	vector<pair<int, int> >::iterator itintrp;
 	for (itrl = goalRoles.begin(); itrl != goalRoles.end(); ++itrl) {
 		cout << "\t" << itrl->first << " Interp: ";
-		vector<pair<int, int> >* rinterpretation =
-				(*itrl->second).GetRoleInterpretation();
+		vector<pair<int, int> >* rinterpretation = (*itrl->second).GetRoleInterpretation();
 
-		for (itintrp = rinterpretation->begin();
-				itintrp != rinterpretation->end(); ++itintrp) {
-			cout << "(" << instanceObjects[(int) (itintrp->first)]->signature()
-					<< ",";
-			cout << instanceObjects[(int) (itintrp->second)]->signature() << ")"
-					<< " ";
+		for (itintrp = rinterpretation->begin(); itintrp != rinterpretation->end(); ++itintrp) {
+			cout << "(" << instanceObjects[(int) (itintrp->first)]->signature() << ",";
+			cout << instanceObjects[(int) (itintrp->second)]->signature() << ")" << " ";
 		}
 		cout << endl;
 	}
@@ -330,8 +306,7 @@ void print_goal_interpretations(STRIPS_Problem& prob) {
 
 void clear_interpretations() {
 	map<string, ConceptNode*>::iterator itPC;
-	for (itPC = primitiveConcepts.begin(); itPC != primitiveConcepts.end();
-			++itPC) {
+	for (itPC = primitiveConcepts.begin(); itPC != primitiveConcepts.end(); ++itPC) {
 		itPC->second->ClearInterpretation();
 	}
 
@@ -384,12 +359,10 @@ void get_goal_interpretations(STRIPS_Problem& prob) {
 
 		pair<int, int>* po;
 		if (arity == 2 && objs_idx.size() == 2) {
-			vector<pair<int, int> >* interpPRVec = goalRoles[current_predicate
-					+ 'g']->GetRoleInterpretation();
+			vector<pair<int, int> >* interpPRVec = goalRoles[current_predicate + 'g']->GetRoleInterpretation();
 			po = new pair<int, int>(objs_idx[0], objs_idx[1]);
 
-			if (std::find((*interpPRVec).begin(), (*interpPRVec).end(), *po)
-					== (*interpPRVec).end()) {
+			if (std::find((*interpPRVec).begin(), (*interpPRVec).end(), *po) == (*interpPRVec).end()) {
 				interpPRVec->push_back(*po);
 			} else {
 				delete po;
@@ -400,18 +373,15 @@ void get_goal_interpretations(STRIPS_Problem& prob) {
 		//TODO find function
 		for (unsigned j = 0; j < objs_idx.size(); j++) {
 			bool found = false;
-			int primitiveConceptsSize =
-					goalConcepts[current_predicate + 'g']->GetInterpretation()->size();
+			int primitiveConceptsSize = goalConcepts[current_predicate + 'g']->GetInterpretation()->size();
 			for (int k = 0; k < primitiveConceptsSize; k++) {
-				if ((*goalConcepts[current_predicate + 'g']->GetInterpretation())[k]
-						== objs_idx[j]) {
+				if ((*goalConcepts[current_predicate + 'g']->GetInterpretation())[k] == objs_idx[j]) {
 					found = true;
 					break;
 				}
 			}
 			if (!found) {
-				goalConcepts[current_predicate + 'g']->GetInterpretation()->push_back(
-						objs_idx[j]);
+				goalConcepts[current_predicate + 'g']->GetInterpretation()->push_back(objs_idx[j]);
 				found = false;
 			}
 		}
@@ -445,15 +415,13 @@ void update_primitive_interpretations(STRIPS_Problem& prob, Node* n) {
 
 		pair<int, int>* p;
 		if (arity == 2 && objs_idx.size() == 2) {
-			cout << "(" << instanceObjects[objs_idx[0]]->signature() << ","
-					<< instanceObjects[objs_idx[1]]->signature() << ")|";
+			cout << "(" << instanceObjects[objs_idx[0]]->signature() << "," << instanceObjects[objs_idx[1]]->signature()
+					<< ")|";
 
-			vector<pair<int, int> >* interpPRVec =
-					primitiveRoles[current_predicate]->GetRoleInterpretation();
+			vector<pair<int, int> >* interpPRVec = primitiveRoles[current_predicate]->GetRoleInterpretation();
 			p = new pair<int, int>(objs_idx[0], objs_idx[1]);
 
-			if (std::find((*interpPRVec).begin(), (*interpPRVec).end(), *p)
-					== (*interpPRVec).end()) {
+			if (std::find((*interpPRVec).begin(), (*interpPRVec).end(), *p) == (*interpPRVec).end()) {
 				interpPRVec->push_back(*p);
 			} else {
 				delete p;
@@ -463,11 +431,9 @@ void update_primitive_interpretations(STRIPS_Problem& prob, Node* n) {
 
 		for (unsigned j = 0; j < objs_idx.size(); j++) {
 			cout << instanceObjects[objs_idx[j]]->signature();
-			vector<int>* interpPCVec =
-					primitiveConcepts[current_predicate]->GetInterpretation();
+			vector<int>* interpPCVec = primitiveConcepts[current_predicate]->GetInterpretation();
 
-			if (std::find((*interpPCVec).begin(), (*interpPCVec).end(),
-					objs_idx[j]) == (*interpPCVec).end()) {
+			if (std::find((*interpPCVec).begin(), (*interpPCVec).end(), objs_idx[j]) == (*interpPCVec).end()) {
 				interpPCVec->push_back(objs_idx[j]);
 			}
 		}
@@ -503,35 +469,52 @@ string get_situation_signature() {
 		if (size > 0) {
 			tmpsignature += "1";
 		} else {
-			if (i == 0)
-				features[i]->infix(cout);
 			tmpsignature += "0";
 		}
 	}
 	return tmpsignature;
 }
 
+bool isSignatureMatch(std::string signature, std::string signature1) {
+	for (int i = 0; i < signature.length(); ++i) {
+		if (signature[i] == signature1[i])
+			continue;
+		if (signature[i] == '*' || signature1[i] == '*')
+			continue;
+		if (signature[i] != signature1[i]) {
+			return false;
+		}
+	}
+	return true;
+}
+
 string resolve_situation() {
 	string sign;
 	sign = get_situation_signature();
 	cout << endl << "Situation signature: " << sign << endl;
-	if (policy.find(sign) != policy.end()) {
-		cout << "Signature found" << endl;
-		return actions[policy[sign]];
+	for (int i = 0; i < decisionList.size(); ++i) {
+		if (isSignatureMatch(decisionList[i].first, sign)) {
+			cout << "Signature found" << endl;
+			return actions[decisionList[i].second];
+		}
 	}
 	return "";
 }
 
 void print_policy() {
-	cout << endl << "Policy:" << endl;
+//	cout << endl << "Policy:" << endl;
+//	map<string, int>::iterator it;
+//	for (it = policy.begin(); it != policy.end(); ++it)
+//		cout << it->first << ":" << actions[it->second] << endl;
+
+	cout << "Policy" << endl;
 	map<string, int>::iterator it;
 	for (it = policy.begin(); it != policy.end(); ++it)
-		cout << it->first << ":" << actions[it->second] << endl;
-
-	for (int i = 0; i < features.size(); ++i) {
-		features[i]->infix(cout);
-		cout << " ";
-	}
+		cout << it->first << " " << it->second << endl;
+//	for (int i = 0; i < features.size(); ++i) {
+//		features[i]->infix(cout);
+//		cout << " ";
+//	}
 	cout << endl;
 }
 
@@ -580,15 +563,15 @@ void print_incorrect() {
 }
 void solve(STRIPS_Problem& prob) {
 	aig_tk::Node* n = aig_tk::Node::root(prob);
-	int max = 1000;
+	int max = 10;
 	set_instance_objects(prob);
 	clear_static_interpretations();
 	get_type_concepts_interpretation(prob);
 	get_goal_interpretations(prob);
-	print_policy();
 	update_primitive_interpretations(prob, n);
 	update_compound_interpretations();
 	print_interpretations(prob);
+	//print_policy();
 	ObjectFinder* ofinder = new ObjectFinder(instanceObjects, &policy, &features);
 	ofinder->MakeJoins();
 	cout << " All objects size: " << instanceObjects.size();
@@ -596,7 +579,7 @@ void solve(STRIPS_Problem& prob) {
 	string paction = resolve_situation();
 	while (!(n->s()->entails(prob.goal())) && max > 0) {
 		bool applied = false;
-		cout << endl << "Acction to apply: " << paction;
+		cout << endl << "Acction to apply: " << paction << endl;
 		if (paction.length() == 0) {
 			cout << endl << "Situation signature cannot be resolved" << endl;
 			max = 0;
@@ -604,16 +587,19 @@ void solve(STRIPS_Problem& prob) {
 		}
 		for (unsigned i = 0; i < prob.num_actions(); i++) {
 			aig_tk::Action* a = prob.actions()[i];
-			unsigned index = resolve_action_index(a->name());
+			//unsigned index = resolve_action_index(a->name());
 			Index_Vec objs_idx = a->pddl_objs_idx();
 
 			if (a->name().compare(paction) == 0) { //&& (*interp)[0] == objs_idx[index]) {
-//				bool inFeatures = objs_in_joined_features(objs_idx);
-				bool inFeatures = ofinder->AreObjectsIn(get_situation_signature(),objs_idx);
-				if (!inFeatures)
-					continue;
-				if (a->can_be_applied_on(*(n->s()))
-						&& n->successor(a) != n->parent()) {
+				cout<<a->name()<<" ";
+				for(int i=0;i<objs_idx.size();++i)
+					cout<<instanceObjects[objs_idx[i]]->name()<<" ";
+				cout<<endl;
+				if (a->can_be_applied_on(*(n->s())) && n->successor(a) != n->parent()) {
+					cout<<"IN"<<endl;
+					bool inFeatures = ofinder->AreObjectsIn(get_situation_signature(), objs_idx);
+					if (!inFeatures)
+						continue;
 					n = n->successor(a);
 					cout << endl << a->signature() << endl;
 					update_primitive_interpretations(prob, n);
@@ -623,6 +609,11 @@ void solve(STRIPS_Problem& prob) {
 					break;
 				}
 			}
+		}
+		if (!applied) {
+			cout << "Action: " << paction << " cannot be applied" << endl;
+			max = 0;
+			break;
 		}
 
 		paction = resolve_situation();
@@ -738,8 +729,7 @@ Expression* contruct_concept(string line) {
 		rootConcepts.push_back(ex);
 	} else if (line[0] == '.') {
 		vector<string> strv = splitline(line);
-		ex = new ValueRestriction(contruct_concept(strv[0]),
-				contruct_concept(strv[1]));
+		ex = new ValueRestriction(contruct_concept(strv[0]), contruct_concept(strv[1]));
 		rootConcepts.push_back(ex);
 	} else if (line[0] == '=') {
 		vector<string> strv = splitline(line);
@@ -823,14 +813,30 @@ void read_policy() {
 	}
 	policySize = binDenots[0].size();
 	if (i != policySize)
-		cout << "ERR: wrong action file!" << i << ":"
-				<< (binDenots[0].size() - 1) << endl;
+		cout << "ERR: wrong action file!" << i << ":" << (binDenots[0].size() - 1) << endl;
 	//cout << "I:" << i << "J:" << binDenots.size();
 	//cout << endl;
 
 //	for (i = 0; i < binDenots.size(); ++i) {
 //		cout << binDenots[i] << endl;
 //	}
+}
+
+void read_decision_list() {
+	string line;
+	string action;
+	ifstream fin("decision_list.txt");
+	if (fin.is_open()) {
+
+		while (!fin.eof() && getline(fin, line)) {
+			getline(fin, action);
+			int action_num;
+			std::istringstream(action) >> action_num;
+			pair<string, int> p(line, action_num);
+			decisionList.push_back(p);
+		}
+	}
+	fin.close();
 }
 
 //void bind_actions(STRIPS_Problem& prob){
@@ -845,6 +851,7 @@ void read_policy() {
 //	}
 //}
 }
+
 using namespace mn;
 int main(int argc, char** argv) {
 	if (argc < 3) {
@@ -863,17 +870,15 @@ int main(int argc, char** argv) {
 	aig_tk::STRIPS_Problem* strips_prob;
 	aig_tk::FF_PDDL_To_STRIPS adl_compiler;
 	read_policy();
+	read_decision_list();
 	//printout();
 
-	instance_path =
-			folder + instance
-					+ static_cast<ostringstream*>(&(ostringstream()
-							<< (instance_num)))->str() + ".pddl";
+	instance_path = folder + instance + static_cast<ostringstream*>(&(ostringstream() << (instance_num)))->str()
+			+ ".pddl";
 	cout << endl << "Using ruleset to solve instance #" << instance_num << endl;
 	strips_prob = new STRIPS_Problem();
 	adl_compiler = FF_PDDL_To_STRIPS();
-	adl_compiler.get_problem_description(domain, instance_path, *strips_prob,
-			true);
+	adl_compiler.get_problem_description(domain, instance_path, *strips_prob, true);
 //		if(i==0) bind_actions(*strips_prob);
 	solve(*strips_prob);
 
