@@ -10,6 +10,8 @@
 #include<iostream>
 #include<vector>
 #include<map>
+#include <planning/PDDL_Type.hxx>
+#include <planning/PDDL_Object.hxx>
 #include "Expression.hxx"
 #include "Operator.hxx"
 #include "UnaryOperator.hxx"
@@ -19,12 +21,17 @@ class ObjectFinder {
 	std::map<std::string, int >* policy;
 	std::vector<Expression* >* features;
 	std::map<std::string, std::vector<int> > joinedFeatures;
+	std::vector<std::pair<std::string, int> > decisionList;
 
 public:
 	ObjectFinder(aig_tk::PDDL_Object_Ptr_Vec allObjects, std::map<std::string, int>* policy,
+			std::vector<std::pair<std::string, int> > decisionList,
 			std::vector<Expression*>* features);
-	bool MakeJoins();
-	bool AreObjectsIn(std::string signature, std::vector<unsigned> objects);
+//	bool MakeJoins();
+//	bool AreObjectsIn(std::string signature, std::vector<unsigned> objects);
+	bool isSignatureMatch(std::string signature, std::string signature1);
+	bool MakeDecisionListJoins();
+	bool IsObjectIn(std::string signature, int object);
 
 };
 
