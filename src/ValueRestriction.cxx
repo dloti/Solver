@@ -38,11 +38,26 @@ void ValueRestriction::UpdateInterpretation() {
 	}
 	it = riFirst.begin();
 	end = riFirst.end();
+	//NOTE: added sort
+	std::sort(it, end);
 	std::vector<int>::iterator first2 = this->right->GetInterpretation()->begin();
 	std::vector<int>::iterator last2 = this->right->GetInterpretation()->end();
-
+	std::sort(first2, last2);
 	this->ClearInterpretation();
-	std::set_intersection(it, end, first2, last2, std::back_inserter(this->interpretation));
+	std::vector<int> secondPart;
+	std::set_intersection(it, end, first2, last2, std::back_inserter(secondPart));
+
+	for (int j = 0; j < secondPart.size(); ++j) {
+		for (pairIterator = ri->begin(); pairIterator != ri->end(); ++pairIterator) {
+			if (pairIterator->second == secondPart[j]) {
+				if (std::find(this->interpretation.begin(), this->interpretation.end(), pairIterator->first)
+						== this->interpretation.end()) {
+					this->interpretation.push_back(pairIterator->first);
+					break;
+				}
+			}
+		}
+	}
 }
 
 ValueRestriction::~ValueRestriction() {
